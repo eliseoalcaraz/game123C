@@ -3,7 +3,7 @@
 ## Steps to Start Working on the Game Project
 
 ### 1. Clone the Repository
-- Open your IDE (e.g., VS Code, IntelliJ, or your preferred tool).
+- Open your IDE (e.g., VS Code, Visual Studio, or your preferred tool).
 - In the terminal, navigate to the folder where you want to clone the repository.
 - Run the following command to clone the project:
 
@@ -11,7 +11,7 @@
     git clone <repository-url>
     ```
 
-    Replace `<repository-url>` with the actual URL of the repository (e.g., from GitHub or GitLab). This will create a local copy of the project on your machine.
+    Replace `<repository-url>` with the actual URL of the repository on the Github. This will create a local copy of the project on your machine.
 
 ### 2. Create a New Branch
 - In the issues section of the repository, there's a button for creating a branch.
@@ -38,7 +38,7 @@
     This will upload your branch to the remote repository so that others can review your work.
 
 ### 5. Create a Pull Request (PR)
-- Go to the repository on the web (GitHub, GitLab, etc.), and you should see an option to create a pull request for your branch.
+- Go to the repository on the Github and you should see an option to create a pull request for your branch.
 - Create a PR for your branch, providing a clear description of the changes you've made.
 - Assign reviewers from your team and request feedback.
 
