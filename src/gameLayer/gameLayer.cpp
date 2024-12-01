@@ -22,6 +22,9 @@ public:
 	glm::vec2 player2Pos = { 1350,450 };
 	glm::vec2 player2Angle = { -1, 0 };
 
+	int player1Health = 100; 
+    int player2Health = 100;
+
 	std::vector<Bullets> bullets1;
 	std::vector<Bullets> bullets2;
 };
@@ -37,6 +40,13 @@ gl2d::Texture backgroundTexture;
 
 gl2d::Texture bulletsTexture;
 gl2d::TextureAtlasPadding bulletsAtlas;
+
+// Function to check collision between a bullet and a player
+bool isBulletHittingPlayer(const glm::vec2& bulletPos, const glm::vec2& playerPos, float playerRadius) 
+{
+    float distance = glm::distance(bulletPos, playerPos);
+    return distance < playerRadius; // Collision occurs if the distance is within the radius
+}
 
 bool initGame()
 {
@@ -76,53 +86,41 @@ bool gameLogic(float deltaTime)
 #pragma region movement on player 1
 
 	glm::vec2 move1 = {};
+    if (platform::isButtonHeld(platform::Button::W)) move1.y = -1;
+    if (platform::isButtonHeld(platform::Button::S)) move1.y = 1;
+    if (platform::isButtonHeld(platform::Button::A)) move1.x = -1;
+    if (platform::isButtonHeld(platform::Button::D)) move1.x = 1;
+    if (move1.x != 0 || move1.y != 0)
+    {
+        move1 = glm::normalize(move1);
+        move1 *= deltaTime * 500;
+        data.player1Pos += move1;
+        data.player1Angle += move1;
+        data.player1Angle = glm::normalize(data.player1Angle);
+    }
 
-	if (platform::isButtonHeld(platform::Button::W))
-		move1.y = -1;
-	if (platform::isButtonHeld(platform::Button::S))
-		move1.y = 1;
-	if (platform::isButtonHeld(platform::Button::A))
-		move1.x = -1;
-	if (platform::isButtonHeld(platform::Button::D))
-		move1.x = 1;
-
-	if (move1.x != 0 || move1.y != 0)
-	{
-		move1 = glm::normalize(move1);
-		move1 *= deltaTime * 500;
-		data.player1Pos += move1;
-		data.player1Angle += move1;
-		data.player1Angle = glm::normalize(data.player1Angle);
-	}
-
-	float jet1Angle = atan2(-data.player1Angle.x, -data.player1Angle.y);
+    float jet1Angle = atan2(-data.player1Angle.x, -data.player1Angle.y);
 
 
 #pragma endregion
 
 #pragma region movement on player 2
 
-	glm::vec2 move2 = {};
+	 glm::vec2 move2 = {};
+    if (platform::isButtonHeld(platform::Button::Up)) move2.y = -1;
+    if (platform::isButtonHeld(platform::Button::Down)) move2.y = 1;
+    if (platform::isButtonHeld(platform::Button::Left)) move2.x = -1;
+    if (platform::isButtonHeld(platform::Button::Right)) move2.x = 1;
+     if (move2.x != 0 || move2.y != 0)
+    {
+        move2 = glm::normalize(move2);
+        move2 *= deltaTime * 500;
+        data.player2Pos += move2;
+        data.player2Angle += move2;
+        data.player2Angle = glm::normalize(data.player2Angle);
+    }
 
-	if (platform::isButtonHeld(platform::Button::Up))
-		move2.y = -1;
-	if (platform::isButtonHeld(platform::Button::Down))
-		move2.y = 1;
-	if (platform::isButtonHeld(platform::Button::Left))
-		move2.x = -1;
-	if (platform::isButtonHeld(platform::Button::Right))
-		move2.x = 1;
-
-	if (move2.x != 0 || move2.y != 0)
-	{
-		move2 = glm::normalize(move2);
-		move2 *= deltaTime * 500;
-		data.player2Pos += move2;
-		data.player2Angle += move2;
-		data.player2Angle = glm::normalize(data.player2Angle);
-	}
-	
-	float jet2Angle = atan2(-data.player2Angle.x, -data.player2Angle.y);
+    float jet2Angle = atan2(-data.player2Angle.x, -data.player2Angle.y);
 
 #pragma endregion
 
@@ -139,43 +137,61 @@ bool gameLogic(float deltaTime)
 
 #pragma region handle bullets 1
 
-	if (platform::isButtonPressedOn(platform::Button::G)) {
-		Bullets b(data.player1Pos, data.player1Angle);
-		data.bullets1.push_back(b);
-	}
-
 	for (int i = 0; i < data.bullets1.size(); i++)
-	{
+{
+    // Check collision with Player 2
+    if (isBulletHittingPlayer(data.bullets1[i].getPos(), data.player2Pos, 50.0f)) 
+    {
+        data.player2Health -= 10; // Decrease Player 2 health
+        if (data.player2Health <= 0) 
+        {
+            std::cout << "Player 2 defeated!" << std::endl;
+            data.player2Health = 0; // Clamp health at zero
+        }
+        data.bullets1.erase(data.bullets1.begin() + i);
+        i--;
+        continue;
+    }
 
-		if (glm::distance(data.bullets1[i].getPos(), data.player1Pos) > 5'000)
-		{
-			data.bullets1.erase(data.bullets1.begin() + i);
-			i--;
-			continue;
-		}
-		data.bullets1[i].update(deltaTime);
-	}
+    if (glm::distance(data.bullets1[i].getPos(), data.player1Pos) > 5'000)
+    {
+        data.bullets1.erase(data.bullets1.begin() + i);
+        i--;
+        continue;
+    }
+    data.bullets1[i].update(deltaTime);
+}
+
 
 #pragma endregion 
 
 #pragma region handle bullets 2
 
-	if (platform::isButtonPressedOn(platform::Button::L)) {
-		Bullets b(data.player2Pos, data.player2Angle);
-		data.bullets2.push_back(b);
-	}
-
 	for (int i = 0; i < data.bullets2.size(); i++)
-	{
+{
+    // Check collision with Player 1
+    if (isBulletHittingPlayer(data.bullets2[i].getPos(), data.player1Pos, 50.0f)) 
+    {
+        data.player1Health -= 10; // Decrease Player 1 health
+        if (data.player1Health <= 0) 
+        {
+            std::cout << "Player 1 defeated!" << std::endl;
+            data.player1Health = 0; // Clamp health at zero
+        }
+        data.bullets2.erase(data.bullets2.begin() + i);
+        i--;
+        continue;
+    }
 
-		if (glm::distance(data.bullets2[i].getPos(), data.player2Pos) > 5'000)
-		{
-			data.bullets2.erase(data.bullets2.begin() + i);
-			i--;
-			continue;
-		}
-		data.bullets2[i].update(deltaTime);
-	}
+    if (glm::distance(data.bullets2[i].getPos(), data.player2Pos) > 5'000)
+    {
+        data.bullets2.erase(data.bullets2.begin() + i);
+        i--;
+        continue;
+    }
+    data.bullets2[i].update(deltaTime);
+}
+
 
 #pragma endregion 
 
@@ -197,7 +213,10 @@ bool gameLogic(float deltaTime)
 
 #pragma endregion
 
-
+ #pragma region render health bars
+    renderer.renderRectangle({ data.player1Pos.x - 50, data.player1Pos.y - 70, (float)data.player1Health, 10 }, Colors_Green);
+    renderer.renderRectangle({ data.player2Pos.x - 50, data.player2Pos.y - 70, (float)data.player2Health, 10 }, Colors_Red);
+#pragma endregion
 
 	renderer.renderRectangle({ data.player1Pos, 100, 100 }, human1BodyTexture, Colors_White, {}, glm::degrees(jet1Angle));
 	renderer.renderRectangle({ data.player2Pos, 100, 100 }, human2BodyTexture, Colors_White, {}, glm::degrees(jet2Angle));
@@ -208,6 +227,8 @@ bool gameLogic(float deltaTime)
 	//ImGui::ShowDemoWindow();
 
 	ImGui::Begin("debug");
+	ImGui::Text("Player 1 Health: %d", data.player1Health);
+    ImGui::Text("Player 2 Health: %d", data.player2Health);
 	ImGui::Text("Bullets 1 count: %d", (int)data.bullets1.size());
 	ImGui::Text("Bullets 2 count: %d", (int)data.bullets2.size());
 	ImGui::End();
