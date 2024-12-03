@@ -4,7 +4,7 @@
 class Bullets {
 private:
 	glm::vec2 position = {};
-	glm::vec2 fireDirection = {};
+	glm::vec2 fireDirection = {};	
 
 public:
 	Bullets();
@@ -13,5 +13,6 @@ public:
 	void render(gl2d::Renderer2D& renderer,
 		gl2d::Texture bulletsTexture, gl2d::TextureAtlasPadding bulletsAtlas
 	);
+
 	void update(float deltaTime);
-};
+};	

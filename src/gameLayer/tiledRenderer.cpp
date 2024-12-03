@@ -5,7 +5,7 @@ TiledRenderer::TiledRenderer() {
 }
 
 TiledRenderer::TiledRenderer(float size, gl2d::Texture tex) {
-	this->backgroundSize = 5000;
+	this->backgroundSize = size;
 	this->texture = tex;
 }
 
@@ -25,3 +25,15 @@ void TiledRenderer::render(gl2d::Renderer2D& renderer) {
 	}
 	renderer.renderRectangle({ 0, 0, backgroundSize, backgroundSize }, texture);
 }
+
+void renderJet(gl2d::Renderer2D& renderer, glm::vec2 position, float size, gl2d::Texture texture, glm::vec4 uvs, glm::vec2 viewDirection){
+
+	float jetAngle = atan2(viewDirection.y, -viewDirection.x);
+
+	renderer.renderRectangle({ position - glm::vec2(size / 2, size / 2)
+	, size,size }, texture,
+		Colors_White, {}, glm::degrees(jetAngle) + 90.f,
+		uvs);
+}
+
+
