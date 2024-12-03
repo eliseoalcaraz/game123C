@@ -83,6 +83,10 @@ bool initGame()
 	return true;
 }
 
+bool checkCollision(glm::vec2 pos1, float radius1, glm::vec2 pos2, float radius2) {
+    float distance = glm::distance(pos1, pos2);
+    return distance <= (radius1 + radius2); // Collides if the distance is less than or equal to the sum of the radii
+}
 
 
 bool gameLogic(float deltaTime)
@@ -209,6 +213,26 @@ bool gameLogic(float deltaTime)
 
 #pragma endregion
 
+#pragma region collision detection between bullets and enemies
+
+	for (int i = 0; i < data.bullets.size(); i++)
+    {
+        for (int j = 0; j < data.enemies.size(); j++)
+        {
+            if (glm::distance(data.bullets[i].getPos(), data.enemies[j].getPos()) < 50.0f) // Example radius
+            {
+                // Remove bullet and enemy on collision
+                data.bullets.erase(data.bullets.begin() + i);
+                i--; // Adjust bullet index
+                data.enemies.erase(data.enemies.begin() + j);
+                j--; // Adjust enemy index
+                break;
+            }
+        }
+    }
+
+#pragma endregion
+
 #pragma region handle enemies
 
 	for (int i = 0; i < data.enemies.size(); i++)
@@ -238,6 +262,24 @@ bool gameLogic(float deltaTime)
 	{
 		e.render(renderer, jetBodyTexture, jetAtlas);
 	}
+
+#pragma endregion
+
+#pragma region collision detection between bullets and players
+
+	for (int i = 0; i < data.bullets.size(); i++)
+    {
+        if (glm::distance(data.bullets[i].getPos(), data.playerPos) < 40.0f) // Example radius
+        {
+            data.health -= 0.1f; // Reduce player health
+            if (data.health <= 0)
+            {
+                restartGame(); // Restart game if player health reaches zero
+            }
+            data.bullets.erase(data.bullets.begin() + i);
+            i--; // Adjust bullet index
+        }
+    }
 
 #pragma endregion
 
