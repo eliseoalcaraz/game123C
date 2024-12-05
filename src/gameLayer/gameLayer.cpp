@@ -26,6 +26,7 @@ public:
 	std::vector<Enemy> enemies;
 
 	float health = 1.f;
+	int score = 0;
 };
 
 GameData data;
@@ -49,6 +50,7 @@ gl2d::Texture health;
 void restartGame()
 {
 	data = {};
+	data.score = 0;
 	renderer.currentCamera.follow(data.playerPos
 		, 550, 0, 0, renderer.windowW, renderer.windowH);
 }
@@ -223,6 +225,9 @@ bool gameLogic(float deltaTime)
         {
             if (glm::distance(data.bullets[i].getPos(), data.enemies[j].getPos()) < 50.0f) // Example radius
             {
+
+				data.score++;  // score increment
+
                 // Remove bullet and enemy on collision
                 data.bullets.erase(data.bullets.begin() + i);
                 i--; // Adjust bullet index
@@ -326,6 +331,7 @@ bool gameLogic(float deltaTime)
 	ImGui::Begin("debug");
 	ImGui::Text("Bullets 1 count: %d", (int)data.bullets.size());
 	ImGui::Text("Enemies count: %d", (int)data.enemies.size());
+	ImGui::Text("Score: %d", data.score); // Display score
 
 	if (ImGui::Button("Spawn enemy"))
 	{
