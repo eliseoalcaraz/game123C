@@ -92,6 +92,7 @@ bool checkCollision(glm::vec2 pos1, float radius1, glm::vec2 pos2, float radius2
     return distance <= (radius1 + radius2); // Collides if the distance is less than or equal to the sum of the radii
 }
 
+bool isGameOver = false;
 
 bool gameLogic(float deltaTime)
 {
@@ -104,6 +105,36 @@ bool gameLogic(float deltaTime)
 	glClear(GL_COLOR_BUFFER_BIT); //clear screen
 
 	renderer.updateWindowMetrics(w, h);
+#pragma endregion
+
+#pragma Game Over
+
+	if (isGameOver)
+	{
+		// Render Game Over Sign
+		ImGui::SetNextWindowPos(ImVec2(w / 2.0f, h / 2.0f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowSize(ImVec2(300, 150));
+		ImGui::Begin("Game Over", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+		ImGui::Text("GAME OVER");
+		ImGui::Separator();
+
+		ImGui::Text("Score: %d", data.score);
+
+		// Add a button to restart the game
+		if (ImGui::Button("Restart", ImVec2(120, 50)))
+		{
+			isGameOver = false; // Reset game state
+			restartGame();
+		}
+
+		ImGui::End();
+
+		// Skip the rest of the game logic
+		return true;
+
+	}
+
 #pragma endregion
 
 #pragma region movement on player 
@@ -281,7 +312,8 @@ bool gameLogic(float deltaTime)
             data.health -= 0.1f; // Reduce player health
             if (data.health <= 0)
             {
-                restartGame(); // Restart game if player health reaches zero
+				isGameOver = true; // Trigger Game Over state
+				return true; // Exit early
             }
             data.bullets.erase(data.bullets.begin() + i);
             i--; // Adjust bullet index
