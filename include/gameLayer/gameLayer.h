@@ -12,6 +12,7 @@ namespace platform
 
 	bool isFullScreen();
 	void setFullScreen(bool f);
+	void setWindowSize(int width, int height);
 
 	//gets the window size, can be different to the actual framebuffer size
 	//you should use getFrameBufferSize if you want the actual ammount of pixels to give to your opengl routines

@@ -1,3 +1,4 @@
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gameLayer.h"
 #include <glad/glad.h>
@@ -17,6 +18,7 @@
 #include <enemy.h>
 #include <tiledRenderer.h>
 #include <bullets.h>
+#include <GLFW/glfw3.h> //for window management
 
 class GameData 
 {
@@ -59,6 +61,25 @@ void restartGame()
 		, 550, 0, 0, renderer.windowW, renderer.windowH);
 }
 
+
+namespace platform
+{
+	void setWindowSize(int width, int height)
+	{
+		GLFWwindow* window = glfwGetCurrentContext(); // Get the current context
+		if (window)
+		{
+			glfwSetWindowSize(window, width, height);
+		}
+		else
+		{
+			// Handle error (e.g., log a message)
+			std::cerr << "Error: No active window context found.\n";
+		}
+	}
+}
+
+
 bool initGame()
 {
 	std::srand(std::time(0));
@@ -66,6 +87,11 @@ bool initGame()
 	gl2d::init();
 	renderer.create();
 	
+	// Enforce a fixed window size
+	const int FIXED_WINDOW_WIDTH = 1280;
+	const int FIXED_WINDOW_HEIGHT = 720;
+	platform::setWindowSize(FIXED_WINDOW_WIDTH, FIXED_WINDOW_HEIGHT);
+
 	//game player sprite
 	jetBodyTexture.loadFromFileWithPixelPadding
 	(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
@@ -150,7 +176,15 @@ bool gameLogic(float deltaTime)
 
 #pragma region camera follow
 
+	const float WORLD_BOUNDARY_X = 5000; // Adjust as per your game's world size
+	const float WORLD_BOUNDARY_Y = 5000;
+
+	// Restrict camera to world boundaries
+	data.playerPos.x = glm::clamp(data.playerPos.x, 0.0f, WORLD_BOUNDARY_X);
+	data.playerPos.y = glm::clamp(data.playerPos.y, 0.0f, WORLD_BOUNDARY_Y);
+
 	renderer.currentCamera.follow(data.playerPos, deltaTime * 550, 1, 150, w, h);
+
 
 #pragma endregion 
 
