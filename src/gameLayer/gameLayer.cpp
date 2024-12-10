@@ -64,6 +64,8 @@ Sound shootSound;
 
 GameState currentState = GameState::MainMenu;
 
+Music backgroundMusic;
+
 bool intersectBullet(glm::vec2 bulletPos, glm::vec2 shipPos, float shipSize)
 {
 	return glm::distance(bulletPos, shipPos) <= shipSize;
@@ -116,6 +118,10 @@ bool initGame()
 
 	font.createFromFile(RESOURCES_PATH "roboto_black.ttf");
 
+	backgroundMusic = LoadMusicStream(RESOURCES_PATH "target.ogg");
+	SetMusicVolume(backgroundMusic, 0.5F);
+	PlayMusicStream(backgroundMusic);
+
 	restartGame();
 	
 	return true;
@@ -152,6 +158,8 @@ bool gameLogic(float deltaTime)
 	renderer.updateWindowMetrics(w, h);
 #pragma endregion
 
+	UpdateMusicStream(backgroundMusic);
+
 	if (currentState == GameState::MainMenu) {
 		renderer.pushCamera();
 		{
@@ -179,6 +187,14 @@ bool gameLogic(float deltaTime)
 		}*/
 
 		return true;
+	}
+
+	if (platform::isButtonPressedOn(platform::Button::M)) {
+
+		static bool isMuted = false;
+		isMuted = !isMuted;
+		SetMusicVolume(backgroundMusic, isMuted ? 0.0F : 0.5F);
+
 	}
 
 	if (currentState == GameState::GameOver) {
@@ -505,6 +521,7 @@ bool gameLogic(float deltaTime)
 void closeGame()
 {
 
-
+	StopMusicStream(backgroundMusic);
+	UnloadMusicStream(backgroundMusic);
 
 }
