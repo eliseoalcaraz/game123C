@@ -21,10 +21,10 @@
 #include <tiledRenderer.h>
 #include <bullets.h>
 
-class GameData 
+class GameData
 {
 public:
-	glm::vec2 playerPos = { 100, 100};
+	glm::vec2 playerPos = { 100, 100 };
 	std::vector<Bullets> bullets;
 	std::vector<Enemy> enemies;
 
@@ -49,8 +49,8 @@ gl2d::TextureAtlasPadding jetAtlas;
 gl2d::Texture jetPlayerTexture;
 gl2d::Texture botTexture[4];
 
-TiledRenderer tiledRenderer[2];
-gl2d::Texture backgroundTexture[2];
+TiledRenderer tiledRenderer[4];
+gl2d::Texture backgroundTexture[4];
 
 gl2d::Texture bulletsTexture;
 gl2d::TextureAtlasPadding bulletsAtlas;
@@ -59,6 +59,7 @@ gl2d::Texture healthBar;
 gl2d::Texture health;
 
 gl2d::Font font;
+gl2d::Font font2;
 
 Sound shootSound;
 
@@ -86,7 +87,7 @@ bool initGame()
 	//initializing stuff for the renderer
 	gl2d::init();
 	renderer.create();
-	
+
 	//game player sprite
 	jetBodyTexture.loadFromFileWithPixelPadding
 	(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
@@ -100,13 +101,17 @@ bool initGame()
 	//background
 	backgroundTexture[0].loadFromFile(RESOURCES_PATH "background/sky_bg2.jpg", true);
 	backgroundTexture[1].loadFromFile(RESOURCES_PATH "background/clouds_bg2.png", true);
+	backgroundTexture[2].loadFromFile(RESOURCES_PATH "background/ciriablast2.png", true);
+	backgroundTexture[3].loadFromFile(RESOURCES_PATH "background/gameoverr.png", true);
 
 	bulletsTexture.loadFromFileWithPixelPadding
 	(RESOURCES_PATH "spaceShip/stitchedFiles/projectiles.png", 500, true);
 	bulletsAtlas = gl2d::TextureAtlasPadding(3, 2, bulletsTexture.GetSize().x, bulletsTexture.GetSize().y);
-	
+
 	tiledRenderer[0] = TiledRenderer(5000, backgroundTexture[0]);
 	tiledRenderer[1] = TiledRenderer(5000, backgroundTexture[1]);
+	tiledRenderer[2] = TiledRenderer(5000, backgroundTexture[2]);
+	tiledRenderer[3] = TiledRenderer(5000, backgroundTexture[3]);
 
 	healthBar.loadFromFile(RESOURCES_PATH "healthBar.png", true);
 	health.loadFromFile(RESOURCES_PATH "health.png", true);
@@ -115,9 +120,10 @@ bool initGame()
 	SetSoundVolume(shootSound, 0.1);
 
 	font.createFromFile(RESOURCES_PATH "roboto_black.ttf");
+	font2.createFromFile(RESOURCES_PATH "Minecraft.ttf");
 
 	restartGame();
-	
+
 	return true;
 }
 
@@ -145,7 +151,7 @@ bool gameLogic(float deltaTime)
 	int w = 0; int h = 0;
 	w = platform::getFrameBufferSizeX(); //window w
 	h = platform::getFrameBufferSizeY(); //window h
-	
+
 	glViewport(0, 0, w, h);
 	glClear(GL_COLOR_BUFFER_BIT); //clear screen
 
@@ -155,16 +161,18 @@ bool gameLogic(float deltaTime)
 	if (currentState == GameState::MainMenu) {
 		renderer.pushCamera();
 		{
+			renderer.renderRectangle({ 0, 0, w, h }, backgroundTexture[2], Colors_White, {}, {});
+
 			glm::vec2 screenCenter(w / 2.0F, h / 2.0F);
 
-			std::string GameTitle = "CIRIABLAST";
-			renderer.renderText(screenCenter - glm::vec2(300, 100), GameTitle.c_str(), font, Colors_Yellow, 1.0F, 7.0F, 6.0F, true, {});
+			// std::string GameTitle = "CIRIABLAST";
+			// renderer.renderText(screenCenter - glm::vec2(300, 100), GameTitle.c_str(), font2, Colors_Yellow, 1.0F, 7.0F, 6.0F, true, {});
 
 			std::string enterText = "Press ENTER to Play";
-			renderer.renderText(screenCenter - glm::vec2(200, 0), enterText.c_str(), font, Colors_White, 1.0F, 4.0F, 3.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(620, 0), enterText.c_str(), font2, Colors_White, 0.8F, 3.0F, 2.0F, true, {});
 
-			std::string exitText = "Press ESC to Restart";
-			renderer.renderText(screenCenter - glm::vec2(230, -130), exitText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+			std::string exitText = "Press ESC to Exit";
+			renderer.renderText(screenCenter - glm::vec2(600, -90), exitText.c_str(), font2, Colors_White, 0.8F, 3.0F, 2.0F, true, {});
 		}
 		renderer.popCamera();
 
@@ -174,9 +182,9 @@ bool gameLogic(float deltaTime)
 			currentState = GameState::Playing;
 			restartGame();
 		}
-		/*else if (platform::isButtonPressedOn(platform::Button::Escape)) {
-			platform::exitApplication();
-		}*/
+		else if (platform::isButtonPressedOn(platform::Button::Escape)) {
+			std::exit(0);
+		}
 
 		return true;
 	}
@@ -184,30 +192,39 @@ bool gameLogic(float deltaTime)
 	if (currentState == GameState::GameOver) {
 		renderer.pushCamera();
 		{
+			// glm::vec2 screenCenter(w / 2.0F, h / 2.0F);
+			renderer.renderRectangle({ 0, 0, w, h }, backgroundTexture[3], Colors_White, {}, {});
+
 			glm::vec2 screenCenter(w / 2.0F, h / 2.0F);
 
-			std::string gameOverText = "Game Over";
-			renderer.renderText(screenCenter - glm::vec2(200, 50), gameOverText.c_str(), font, Colors_Red, 1.0F, 6.0F, 5.0F, true, {});
+			// std::string gameOverText = "GAME OVER";
+			// renderer.renderText(screenCenter - glm::vec2(200, 50) + glm::vec2(2.0f, 2.0f), gameOverText.c_str(), font2, Colors_Black, 1.0F, 6.0F, 5.0F, true, {});
+			// renderer.renderText(screenCenter - glm::vec2(200, 50), gameOverText.c_str(), font2, Colors_Red, 1.0F, 6.0F, 5.0F, true, {});
 
-			std::string finalScore = "Final Score: " + std::to_string(data.points);
-			renderer.renderText(screenCenter - glm::vec2(230, -50), finalScore.c_str(), font, Colors_Red, 1.0F, 4.0F, 3.0F, true, {});
+			std::string finalScore = "FINAL SCORE: " + std::to_string(data.points);
+			renderer.renderText(screenCenter - glm::vec2(230, -50) + glm::vec2(2.0f, 2.0f), finalScore.c_str(), font2, Colors_Black, 1.0F, 4.0F, 3.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(230, -50), finalScore.c_str(), font2, glm::vec4(0.780f, 0.151f, 0.0f, 1.0f), 1.0F, 4.0F, 3.0F, true, {});
 
 			std::string restartText = "Press R to Restart";
-			renderer.renderText(screenCenter - glm::vec2(230, -130), restartText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(230, -130) + glm::vec2(2.0f, 2.0f), restartText.c_str(), font2, Colors_Black, 1.0F, 3.0F, 2.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(230, -130), restartText.c_str(), font2, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
 
 			std::string menuText = "Press M to return to Main Menu";
-			renderer.renderText(screenCenter - glm::vec2(230, -200), menuText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(230, -200) + glm::vec2(2.0f, 2.0f), menuText.c_str(), font2, Colors_Black, 1.0F, 3.0F, 2.0F, true, {});
+			renderer.renderText(screenCenter - glm::vec2(230, -200), menuText.c_str(), font2, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
 		}
 		renderer.popCamera();
 
-		renderer.flush();
+			renderer.flush();
 
 		if (platform::isButtonPressedOn(platform::Button::R)) {
 			restartGame();
 			currentState = GameState::Playing;
 		}
-		else if(platform::isButtonPressedOn(platform::Button::M)){
+		else if (platform::isButtonPressedOn(platform::Button::M)) {
 			currentState = GameState::MainMenu;
+		} else if(platform::isButtonPressedOn(platform::Button::Escape)){
+			std::exit(0);
 		}
 		return true;
 	}
@@ -262,8 +279,26 @@ bool gameLogic(float deltaTime)
 
 #pragma region render background
 
-	for(int i = 0; i < 2; i++)
-		tiledRenderer[i].render(renderer);
+	if (currentState == GameState::MainMenu) {
+		renderer.pushCamera();
+		{
+			renderer.renderRectangle({ 0, 0, w, h }, backgroundTexture[2], Colors_White, {}, {});
+		}
+		renderer.popCamera();
+	}
+	else if (currentState == GameState::Playing) {
+		// Render the other background textures
+		for (int i = 0; i < 2; i++) {
+			tiledRenderer[i].render(renderer);
+		}
+	}
+	else if (currentState == GameState::GameOver){
+		renderer.pushCamera();
+		{
+			renderer.renderRectangle({0, 0, w, h}, backgroundTexture[3], Colors_White, {}, {});
+		}
+		renderer.popCamera();
+	}
 
 #pragma endregion
 
@@ -386,7 +421,7 @@ bool gameLogic(float deltaTime)
 	{
 		data.spawnTimeEnemy -= deltaTime;
 
-		if (data.spawnTimeEnemy  < 0)
+		if (data.spawnTimeEnemy < 0)
 		{
 			data.spawnTimeEnemy = rand() % 6 + 1;
 
@@ -444,8 +479,8 @@ bool gameLogic(float deltaTime)
 #pragma endregions
 
 
-	
-	
+
+
 
 	renderer.pushCamera();
 	{
@@ -468,8 +503,8 @@ bool gameLogic(float deltaTime)
 
 		std::string currentPoints = "Score: " + std::to_string(data.points);
 		const char* points = currentPoints.c_str();
-		
-		renderer.renderText(glm::vec2{ 150, 50 }, points, font, Colors_Black, (1.0F), (4.0F), (3.0F), true, {});
+
+		renderer.renderText(glm::vec2{ 150, 50 }, points, font, Colors_White, (1.0F), (4.0F), (3.0F), true, {});
 
 	}
 	renderer.popCamera();
