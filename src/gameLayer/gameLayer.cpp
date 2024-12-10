@@ -33,6 +33,12 @@ public:
 	int points = 0;
 };
 
+enum class GameState {
+	MainMenu,
+	Playing,
+	GameOver
+};
+
 GameData data;
 
 gl2d::Renderer2D renderer;
@@ -56,17 +62,23 @@ gl2d::Font font;
 
 Sound shootSound;
 
+GameState currentState = GameState::MainMenu;
+
 bool intersectBullet(glm::vec2 bulletPos, glm::vec2 shipPos, float shipSize)
 {
 	return glm::distance(bulletPos, shipPos) <= shipSize;
 }
 
+
+
 void restartGame()
 {
 	data = {};
+	renderer.currentCamera.follow(data.playerPos, 550, 0, 0, renderer.windowW, renderer.windowH);
 	renderer.currentCamera.follow(data.playerPos
 		, 550, 0, 0, renderer.windowW, renderer.windowH);
 }
+
 
 bool initGame()
 {
@@ -139,6 +151,66 @@ bool gameLogic(float deltaTime)
 
 	renderer.updateWindowMetrics(w, h);
 #pragma endregion
+
+	if (currentState == GameState::MainMenu) {
+		renderer.pushCamera();
+		{
+			glm::vec2 screenCenter(w / 2.0F, h / 2.0F);
+
+			std::string GameTitle = "CIRIABLAST";
+			renderer.renderText(screenCenter - glm::vec2(300, 100), GameTitle.c_str(), font, Colors_Yellow, 1.0F, 7.0F, 6.0F, true, {});
+
+			std::string enterText = "Press ENTER to Play";
+			renderer.renderText(screenCenter - glm::vec2(200, 0), enterText.c_str(), font, Colors_White, 1.0F, 4.0F, 3.0F, true, {});
+
+			std::string exitText = "Press ESC to Restart";
+			renderer.renderText(screenCenter - glm::vec2(230, -130), exitText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+		}
+		renderer.popCamera();
+
+		renderer.flush();
+
+		if (platform::isButtonPressedOn(platform::Button::Enter)) {
+			currentState = GameState::Playing;
+			restartGame();
+		}
+		/*else if (platform::isButtonPressedOn(platform::Button::Escape)) {
+			platform::exitApplication();
+		}*/
+
+		return true;
+	}
+
+	if (currentState == GameState::GameOver) {
+		renderer.pushCamera();
+		{
+			glm::vec2 screenCenter(w / 2.0F, h / 2.0F);
+
+			std::string gameOverText = "Game Over";
+			renderer.renderText(screenCenter - glm::vec2(200, 50), gameOverText.c_str(), font, Colors_Red, 1.0F, 6.0F, 5.0F, true, {});
+
+			std::string finalScore = "Final Score: " + std::to_string(data.points);
+			renderer.renderText(screenCenter - glm::vec2(230, -50), finalScore.c_str(), font, Colors_Red, 1.0F, 4.0F, 3.0F, true, {});
+
+			std::string restartText = "Press R to Restart";
+			renderer.renderText(screenCenter - glm::vec2(230, -130), restartText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+
+			std::string menuText = "Press M to return to Main Menu";
+			renderer.renderText(screenCenter - glm::vec2(230, -200), menuText.c_str(), font, Colors_White, 1.0F, 3.0F, 2.0F, true, {});
+		}
+		renderer.popCamera();
+
+		renderer.flush();
+
+		if (platform::isButtonPressedOn(platform::Button::R)) {
+			restartGame();
+			currentState = GameState::Playing;
+		}
+		else if(platform::isButtonPressedOn(platform::Button::M)){
+			currentState = GameState::MainMenu;
+		}
+		return true;
+	}
 
 #pragma region movement on player 
 
@@ -289,7 +361,8 @@ bool gameLogic(float deltaTime)
 	if (data.health <= 0)
 	{
 		//kill player
-		restartGame();
+		currentState = GameState::GameOver;
+		std::cout << "Game Over triggered" << std::endl;
 	}
 	else
 	{
@@ -369,6 +442,8 @@ bool gameLogic(float deltaTime)
 		Colors_White, {}, glm::degrees(jetAngle) + 90.f);
 
 #pragma endregions
+
+
 	
 	
 
@@ -391,10 +466,10 @@ bool gameLogic(float deltaTime)
 		renderer.renderRectangle(newRect, health, Colors_White, {}, {},
 			textCoords);
 
-		std::string currentPoints = "Points: " + std::to_string(data.points);
+		std::string currentPoints = "Score: " + std::to_string(data.points);
 		const char* points = currentPoints.c_str();
 		
-		renderer.renderText(glm::vec2{ 200, 50 }, points, font, Colors_Black);
+		renderer.renderText(glm::vec2{ 150, 50 }, points, font, Colors_Black, (1.0F), (4.0F), (3.0F), true, {});
 
 	}
 	renderer.popCamera();
